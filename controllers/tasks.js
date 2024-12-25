@@ -4,7 +4,10 @@ const getAllTasks = async (req, res) => {
   try {
     const tasks = await Task.find({});
 
-    res.status(200).json({ tasks });
+    res.status(200).json({
+      status: "success",
+      data: { tasks, nbHits: tasks.length }
+    });
   } catch (e) {
     res.status(500).json({ msg: e });
   }
@@ -31,6 +34,17 @@ const getTask = async (req, res) => {
   }
 };
 
+const deleteTask = async (req, res) => {
+  try {
+    const { id: taskID } = req.params;
+    const task = await Task.deleteOne({ _id: taskID });
+
+    res.status(200).json({ task });
+  } catch (e) {
+    res.status(500).json({ msg: e });
+  }
+};
+
 const updateTask = async (req, res) => {
   try {
     const { id: taskID } = req.params;
@@ -45,15 +59,26 @@ const updateTask = async (req, res) => {
   }
 };
 
-const deleteTask = async (req, res) => {
+// same as updateTask but is called when PUT request is received.
+const editTask = async (req, res) => {
   try {
     const { id: taskID } = req.params;
-    const task = await Task.deleteOne({ _id: taskID });
+    const task = await Task.findOneAndUpdate({ _id: taskID }, req.body, {
+      new: true,
+      runValidators: true
+    });
 
-    res.status(200).json({ task });
+    res.status(200).json(task);
   } catch (e) {
     res.status(500).json({ msg: e });
   }
 };
 
-module.exports = { getAllTasks, createTask, getTask, updateTask, deleteTask };
+module.exports = {
+  getAllTasks,
+  createTask,
+  getTask,
+  updateTask,
+  deleteTask,
+  editTask
+};
